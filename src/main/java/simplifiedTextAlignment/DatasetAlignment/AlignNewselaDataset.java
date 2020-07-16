@@ -25,12 +25,15 @@ public class AlignNewselaDataset {
 
 	public static void main(String args[]) throws IOException{
 		//BEGINNING OF CONFIG PARAMETERS
-		
-		String baseDir = "/path/to/your/newsela/parent/folder/";
+
+		// String baseDir = "/path/to/your/newsela/parent/folder/";
+		// TODO: Update this
+		String baseDir = "/Users/schan/Desktop/wm-revision-analysis/aligners/ngram_aligner/";
 
 //		String inFolder = baseDir+"newsela/sample/";
-		String inFolder = baseDir+"SimplifiedTextAlignment/newsela_article_corpus_2016-01-29/articles/";
+		// String inFolder = baseDir+"SimplifiedTextAlignment/newsela_article_corpus_2016-01-29/articles/";
 //		String inFolder = baseDir+"SimplifiedTextAlignment/newsela_article_corpus_2016-01-29/testArticles/";
+		String inFolder = baseDir + "test_input_dir/";
 
 		String language = DefinedConstants.EnglishLanguage;
 //		String language = DefinedConstants.SpanishLanguage;
@@ -38,9 +41,9 @@ public class AlignNewselaDataset {
 //		String alignmentLevel = DefinedConstants.ParagraphSepEmptyLineLevel;
 		String alignmentLevel = DefinedConstants.SentenceLevel;
 //		String alignmentLevel = DefinedConstants.ParagraphSepEmptyLineAndSentenceLevel;
-		
+
 		int nGramSize = 3;
-		
+
 //		String similarityStrategy = DefinedConstants.WAVGstrategy;
 //		String similarityStrategy = DefinedConstants.CWASAstrategy;
 		String similarityStrategy = DefinedConstants.CNGstrategy;
@@ -50,18 +53,20 @@ public class AlignNewselaDataset {
 
 		String subLvAlignmentStrategy = DefinedConstants.closestSimStrategy;
 //		String subLvAlignmentStrategy = DefinedConstants.closestSimKeepingSeqStrategy;
-		
+
 //		String outFolder = baseDir+"newsela/output/"+language+"/"+alignmentLevel+
-		String outFolder = baseDir+"newsela_article_corpus_2016-01-29/output/"+language+"/"+alignmentLevel+
-				"_"+(!alignmentLevel.equals(DefinedConstants.ParagraphSepEmptyLineAndSentenceLevel) ? alignmentStrategy : alignmentStrategy+"_"+subLvAlignmentStrategy)
-				+"_"+(similarityStrategy.equals(DefinedConstants.CNGstrategy) ? similarityStrategy.replace("N", nGramSize+"") : similarityStrategy)+"/";
+		// String outFolder = baseDir+"newsela_article_corpus_2016-01-29/output/"+language+"/"+alignmentLevel+
+		// 		"_"+(!alignmentLevel.equals(DefinedConstants.ParagraphSepEmptyLineAndSentenceLevel) ? alignmentStrategy : alignmentStrategy+"_"+subLvAlignmentStrategy)
+		// 		+"_"+(similarityStrategy.equals(DefinedConstants.CNGstrategy) ? similarityStrategy.replace("N", nGramSize+"") : similarityStrategy)+"/";
+		String outFolder = baseDir + "test_output_dir/";
 		String embeddingsFile = null;
-		
+
 		if(language.equals(DefinedConstants.EnglishLanguage))
-			embeddingsFile = baseDir+"w2v_collections/Wikipedia/vectors/EN_Wikipedia_w2v_input_format.txtUTF8.vec";
+			// embeddingsFile = baseDir+"w2v_collections/Wikipedia/vectors/EN_Wikipedia_w2v_input_format.txtUTF8.vec";
+			embeddingsFile = baseDir + "wiki-news-300d-1M.vec";
 		else if(language.equals(DefinedConstants.SpanishLanguage))
 			embeddingsFile = baseDir+"w2v_collections/SBW-vectors-300-min5.txt";
-		
+
 		if (args.length > 0) {
 			inFolder = outFolder = null;
 			nGramSize = 0;
@@ -88,7 +93,7 @@ public class AlignNewselaDataset {
 			MyIOutils.showNewselaUsageMessage();
 		}
 		//END CONFIG PARAMETERS
-		
+
 		boolean isCWASA = false;
 		ModelContainer model = null;
 		if((isCWASA=similarityStrategy.equals(DefinedConstants.CWASAstrategy)) || similarityStrategy.equals(DefinedConstants.WAVGstrategy)){
@@ -106,7 +111,7 @@ public class AlignNewselaDataset {
 			model = new ModelContainer(aux = new NgramModel(true, nGramSize));
 			aux.buildNewselaNgramModel(inFolder,language, alignmentLevel);
 		}
-		
+
 		// create output folder if it does not exists
 		boolean success = (new File(outFolder)).mkdirs();
 		if(!success) {
@@ -117,7 +122,7 @@ public class AlignNewselaDataset {
 		}
 		else
 			System.out.println("Output folder successfully created: " + outFolder);
-		
+
 		System.out.println("Aligning...");
 		long ini = System.currentTimeMillis();
 		alignNewselaDataset(inFolder,language,outFolder,alignmentLevel, similarityStrategy, alignmentStrategy, subLvAlignmentStrategy, model);
@@ -126,32 +131,45 @@ public class AlignNewselaDataset {
 	}
 
 	private static void alignNewselaDataset(String inFolder, String language, String outFolder,
-			String alignmentLevel, String similarityStrategy, String alignmentStrategy, String subLvAlignmentStrategy, ModelContainer model) throws IOException {	
+											String alignmentLevel, String similarityStrategy, String alignmentStrategy, String subLvAlignmentStrategy, ModelContainer model) throws IOException {
 		DirectoryScanner scanner = new DirectoryScanner();
-		scanner.setIncludes(new String[]{"*."+language+".0.txt"});
+
+		System.out.println("inFolder " + inFolder);
+		System.out.println("outFolder " + outFolder);
+		scanner.setIncludes(new String[]{"*_1.txt"});
 		scanner.setBasedir(inFolder);
 		scanner.setCaseSensitive(false);
 		scanner.scan();
 		String[] files = scanner.getIncludedFiles();
-	
+
 		int k = 0;
-		for(String fileProto : files){		
+		for(String fileProto : files){
+			System.out.println("fileProto: " + fileProto);
+
+
 			Map<String, List<Text2abstractRepresentation>> file2clean = new HashMap<String, List<Text2abstractRepresentation>>();
-			for (int i = 0; i <= 5; i++) {
-				String file1 = fileProto.replace("." + language + ".0.txt","." + language + "." + i + ".txt");
+			for (int i = 1; i <= 2; i++) {
+				String file1 = fileProto.replace("_1.txt","_" + i + ".txt");
 				String text1 = MyIOutils.readTextFile(inFolder+file1);
-				if (text1 != null) 
+				if (text1 != null)
 					file2clean.put(file1, TextProcessingUtils.getCleanText(text1,alignmentLevel, similarityStrategy, model));
 			}
-			
+
+
 			List<Text2abstractRepresentation> cleanSubtexts1;
 			List<Text2abstractRepresentation> cleanSubtexts2;
-			for (int i = 0; i < 5; i++) {
-				String file1 = fileProto.replace("." + language + ".0.txt", "." + language + "." + i + ".txt");
+			for (int i = 0; i < 2; i++) {
+				String file1 = fileProto.replace("_1.txt","_" + i + ".txt");
 				if ((cleanSubtexts1 = file2clean.get(file1)) != null) {
-					for (int j = i + 1; j <= 5; j++) {
-						String file2 = fileProto.replace("." + language + ".0.txt", "." + language + "." + j + ".txt");
+					for (int j = i + 1; j <= 2; j++) {
+						String file2 = fileProto.replace("_1.txt", "_" + j + ".txt");
 						if ((cleanSubtexts2 = file2clean.get(file2)) != null) {
+
+							System.out.println("file1: " + file1);
+							System.out.println("file2: " + file2);
+
+//							System.out.println(cleanSubtexts1);
+//							System.out.println(cleanSubtexts2);
 							List<TextAlignment> alignments = VectorUtils.alignUsingStrategy(cleanSubtexts1,	cleanSubtexts2, similarityStrategy, alignmentStrategy, model);
 //							MyIOutils.displayAlignments(alignments,false);
 //							System.in.read();
@@ -162,12 +180,12 @@ public class AlignNewselaDataset {
 					}
 				}
 			}
-			
+
 //			String text1 = MyIOutils.readTextFile(inFolder+file1);
 //			List<Text2abstractRepresentation> cleanSubtexts1 = TextProcessingUtils.getCleanText(text1,alignmentLevel, similarityStrategy, model);
 //			String fileAux = null;
 //			List<Text2abstractRepresentation> cleanSubtextsAux = null;
-			
+
 //			for (int i = 1; i <= 5; i++) {
 //				String file2 = file1.replace("." + language + ".0.txt","." + language + "." + i + ".txt");
 //				String text2 = MyIOutils.readTextFile(inFolder + file2);
@@ -191,14 +209,14 @@ public class AlignNewselaDataset {
 //					cleanSubtexts1 = cleanSubtexts2;
 //				}
 //			}
-			
+
 			k++;
 			if(k%10 == 0)
 				System.out.println(k + "/" + files.length);
 		}
 	}
 
-	private static List<Text2abstractRepresentation> processCompareAndSave(List<Text2abstractRepresentation> cleanSubtexts1, String text2, 
+	private static List<Text2abstractRepresentation> processCompareAndSave(List<Text2abstractRepresentation> cleanSubtexts1, String text2,
 			String alignmentLevel, String alignmentStrategy, String subLvAlignmentStrategy, String similarityStrategy, ModelContainer model,
 			String outFile) throws IOException {
 		List<Text2abstractRepresentation> cleanSubtexts2 = TextProcessingUtils.getCleanText(text2,alignmentLevel, similarityStrategy,model);

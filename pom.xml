@@ -4,6 +4,11 @@
 	<groupId>com.nlp.simplifiedTextAlignment</groupId>
 	<artifactId>simplifiedTextAlignment</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+    <properties>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
+
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-io -->
 		<!-- https://mvnrepository.com/artifact/ant/ant -->
@@ -18,4 +23,50 @@
 			<version>1.0.4</version>
 		</dependency>
 	</dependencies>
+
+	<build>
+    <plugins>
+        <plugin>
+            <!-- <groupId>org.apache.maven.plugins</groupId> -->
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+                <archive>
+                    <manifest>
+                        <addClasspath>true</addClasspath>
+                        <mainClass>simplifiedTextAlignment.DatasetAlignment.AlignNewselaDataset</mainClass>
+                    </manifest>
+                </archive>
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+            </configuration>
+        </plugin>
+    </plugins>
+    </build>
+
+	<pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>

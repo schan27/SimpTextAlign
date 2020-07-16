@@ -36,7 +36,7 @@ public class NgramModel {
 	
 	public void buildNewselaNgramModel(String inFolder, String language, String alignmentLevel) throws IOException {
 		DirectoryScanner scanner = new DirectoryScanner();
-		scanner.setIncludes(new String[]{"*."+language+".0.txt"});
+		scanner.setIncludes(new String[]{"*_1.txt"});
 		scanner.setBasedir(inFolder);
 		scanner.setCaseSensitive(false);
 		scanner.scan();
@@ -47,7 +47,7 @@ public class NgramModel {
 			String text = MyIOutils.readTextFile(inFolder+file);
 			processAndCountTextNgrams(text,alignmentLevel);
 			for (int i = 1; i <= 5; i++) {
-				file = file.replace("." + language + ".0.txt","." + language + "." + i + ".txt");
+				String file1 = file.replace("_1.txt","_" + i + ".txt");
 				text = MyIOutils.readTextFile(inFolder+file);
 				if (text != null)
 					processAndCountTextNgrams(text,alignmentLevel);
